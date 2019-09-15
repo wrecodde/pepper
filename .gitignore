@@ -1,0 +1,15 @@
+# basically ignore static files directory
+*.js
+*.css
+*.map
+
+# except these files
+!static/bootstrap/css/bootstrap.min.css
+!static/bootstrap/js/bootstrap.bundle.min.js
+!static/jquery/jquery.min.js
+
+# ignore vscode dir
+.vscode/
+
+# ignore venv dir
+venv
