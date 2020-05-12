@@ -6,6 +6,11 @@ import tornado.httpclient
 import io, os, json
 import secrets, random
 
+import requests
+
+
+privete_key = ''
+secret_key = ''
 
 class BaseHandler(tornado.web.RequestHandler):
     pass
@@ -20,7 +25,35 @@ class AboutPage(BaseHandler):
 
 class PaymentsPage(BaseHandler):
     def get(self):
-        self.render('pay.html')
+        context = {
+            'page': 'payment',
+            'status': 'failed'
+        }
+        self.render('pay.html', context=context)
+    
+    def post(self):
+        reference = self.get_argument('reference')
+        request = requests.get(
+            f"https://api.paystack.co/transaction/verify/{reference}",
+            headers={
+                'Authorization': f'Bearer {secret_key}'
+            }
+        )
+        context = {
+            'page': 'thanks',
+            'status': 'success',
+        }
+        if request.status_code == 200:
+            response = json.loads(request.text)
+            if response['data']['status'] == 'success':
+                self.render('pay.html', context=context)
+            else:
+                context['status'] = 'failed'
+                self.render('pay.html', context=context)
+        else:
+            context['status'] = 'failed'
+            self.render('pay.html', context=context)
+
 
 from tornado.options import define
 define("port", default=3309, type=int)
@@ -28,7 +61,7 @@ define("port", default=3309, type=int)
 handlers = [
     (r"/", IndexPage),
     (r"/about", AboutPage),
-    (r"/pay", PaymentsPage)
+    (r"/pay", PaymentsPage),
 ]
 
 # switch debug mode on or off

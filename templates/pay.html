@@ -12,9 +12,94 @@
   <div class="container-fluid">
     <div class="container">
       <div class="row justify-content-center my-5">
+        {% if context['page'] == 'payment' %}
         <div class="col-md-8">
-          <h2 class="display-4">Paystack's stuff goes here!</h2>
+          <h2 class="display-4">Cuppa Coffee</h2>
+          <p class="text-primary"><a href="/">&larr; Home</a></p>
+          <div id="paystack">
+            <h2 class="font-weight-bold">Buy me a Dev-size cup: N500</h2>
+            <form >
+              <div class="form-group">
+                <label for="full-name">Name</label>
+                <input type="text" class="form-control" id="full_name" placeholder="Your name" required>
+              </div>
+              <div class="form-group">
+                <label for="email-address">Email address</label>
+                <input type="email" class="form-control" id="email_address" placeholder="Your email address" required>
+              </div>
+              <div class="form-group">
+                <label for="phone-number">Phone number</label>
+                <input type="" class="form-control" id="phone_number" placeholder="Your phone number">
+              </div>
+              <script src="https://js.paystack.co/v1/inline.js"></script>
+              <button type="button" class="btn btn-primary px-3" onclick="payWithPaystack()">Pay</button> 
+            </form>
+             
+            <script>
+              function payWithPaystack(){
+                var handler = PaystackPop.setup({
+                  key: 'pk_test_20625dade6ebb7d64522523776b45216907aa371',
+                  email: $('#email_address').val(),
+                  amount: 50000,
+                  currency: "NGN",
+                  metadata: {
+                     custom_fields: [
+                        {
+                            display_name: "Mobile Number",
+                            variable_name: "mobile_number",
+                            value: $('#phone_number').val()
+                        },
+                        {
+                            display_name: "Customer Name",
+                            variable_name: "customer_name",
+                            value: $('#full_name').val()
+                        }
+                     ]
+                  },
+                  callback: function(response){
+                      console.log(response)
+                      let transaction_ref = response.reference;
+                      console.log(transaction_ref)
+                      $.ajax('/pay',
+                      {
+                        method: 'POST',
+                        data: {
+                          name: $('#full_name').val(),
+                          email: $('#email_address').val(),
+                          phone: $('#phone_number').val(),
+                          reference: transaction_ref
+                        }
+                      }).done(function(resp){
+                        console.log(resp)
+                      })
+                  },
+                  onClose: function(){
+                      console.log('window closed.')
+                  }
+                });
+                handler.openIframe();
+              }
+            </script>
+          </div>
         </div>
+        {% else %}
+        <div class="col-md-8">
+          <h2 class="display-4">Thank you..</h2>
+          <p class="text-primary"><a href="/">&larr; Home</a></p>
+          <div id="thankyou">
+            {% if context['status'] == 'success' %}
+            <h2 class="font-weight-bold">Yay!</h2>
+            <p class="text-muted">You've just bought me a cuppa coffee</p>
+            <img class="img-fluid" src="{{ static_url('excited.gif') }}" alt="I'm so Excited">
+            {% elif context['status'] == 'failed' %}
+            <h2 class="font-weight-bold">Shucks!</h2>
+            <p class="text-muted">I'm having trouble receiving payment at the moment.</p>
+            <p class="text-muted">I'll let you know if it comes through though.</p>
+            <img class="img-fluid" src="{{ static_url('sad.gif') }}" alt="Not so Excited">
+            {% end if %}
+          </div>
+        </div>
+        {% end if %}
       </div>
     </div>
   </div>
