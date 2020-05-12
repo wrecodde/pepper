@@ -12,7 +12,6 @@
   <div class="container-fluid">
     <div class="container">
       <div class="row justify-content-center my-5">
-        {% if context['page'] == 'payment' %}
         <div class="col-md-8">
           <h2 class="display-4">Cuppa Coffee</h2>
           <p class="text-primary"><a href="/">&larr; Home</a></p>
@@ -32,7 +31,7 @@
                 <input type="" class="form-control" id="phone_number" placeholder="Your phone number">
               </div>
               <script src="https://js.paystack.co/v1/inline.js"></script>
-              <button type="button" class="btn btn-primary px-3" onclick="payWithPaystack()">Pay</button> 
+              <button type="button" class="btn btn-primary px-4" onclick="payWithPaystack()">Send</button> 
             </form>
              
             <script>
@@ -57,9 +56,7 @@
                      ]
                   },
                   callback: function(response){
-                      console.log(response)
                       let transaction_ref = response.reference;
-                      console.log(transaction_ref)
                       $.ajax('/pay',
                       {
                         method: 'POST',
@@ -70,7 +67,8 @@
                           reference: transaction_ref
                         }
                       }).done(function(resp){
-                        console.log(resp)
+                        resp = JSON.parse(resp)
+                        window.location = '/thanks?status=' + resp.status
                       })
                   },
                   onClose: function(){
@@ -82,24 +80,6 @@
             </script>
           </div>
         </div>
-        {% else %}
-        <div class="col-md-8">
-          <h2 class="display-4">Thank you..</h2>
-          <p class="text-primary"><a href="/">&larr; Home</a></p>
-          <div id="thankyou">
-            {% if context['status'] == 'success' %}
-            <h2 class="font-weight-bold">Yay!</h2>
-            <p class="text-muted">You've just bought me a cuppa coffee</p>
-            <img class="img-fluid" src="{{ static_url('excited.gif') }}" alt="I'm so Excited">
-            {% elif context['status'] == 'failed' %}
-            <h2 class="font-weight-bold">Shucks!</h2>
-            <p class="text-muted">I'm having trouble receiving payment at the moment.</p>
-            <p class="text-muted">I'll let you know if it comes through though.</p>
-            <img class="img-fluid" src="{{ static_url('sad.gif') }}" alt="Not so Excited">
-            {% end if %}
-          </div>
-        </div>
-        {% end if %}
       </div>
     </div>
   </div>

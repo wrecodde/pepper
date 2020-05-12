@@ -9,8 +9,7 @@ import secrets, random
 import requests
 
 
-privete_key = ''
-secret_key = ''
+secret_key = os.getenv('SECRET_KEY')
 
 class BaseHandler(tornado.web.RequestHandler):
     pass
@@ -39,20 +38,24 @@ class PaymentsPage(BaseHandler):
                 'Authorization': f'Bearer {secret_key}'
             }
         )
-        context = {
-            'page': 'thanks',
-            'status': 'success',
-        }
+        context = { 'status': 'success'}
+        
         if request.status_code == 200:
             response = json.loads(request.text)
             if response['data']['status'] == 'success':
-                self.render('pay.html', context=context)
+                self.write(json.dumps(context))
             else:
                 context['status'] = 'failed'
-                self.render('pay.html', context=context)
+                self.write(json.dumps(context))
         else:
             context['status'] = 'failed'
-            self.render('pay.html', context=context)
+            self.write(json.dumps(context))
+
+class ThankYouPage(BaseHandler):
+    def get(self):
+        status = self.get_argument('status')
+        print(status)
+        self.render('thanks.html', status=status)
 
 
 from tornado.options import define
@@ -62,6 +65,7 @@ handlers = [
     (r"/", IndexPage),
     (r"/about", AboutPage),
     (r"/pay", PaymentsPage),
+    (r"/thanks", ThankYouPage),
 ]
 
 # switch debug mode on or off
